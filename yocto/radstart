@@ -11,6 +11,12 @@ export CX_LOG=$CXUSERPATH/log/crossover-bootexec.log
 # POS Interface (find using /sbin/ip addr show)
 POSINTERFACE=2
 
+pushd /tmp/.X11-unix
+TMPDISPLAY=`ls -1 * | head`
+DISPLAYNUM=${TMPDISPLAY#X}
+DISPLAYVAR="DISPLAY=:${DISPLAYNUM}"
+popd
+
 # clam logfile
 CLAM_LOGFILE="/home/pcrfuel/Radiant/FastPoint/Log/clamav.log"
 
@@ -33,7 +39,7 @@ fi
 function setTimezoneFeatureFlag()
 {
     # sets a flag to enable/disable timezone suport
-    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/tz-enabled.reg '${JAG3_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
+    su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/tz-enabled.reg '${JAG3_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
     rc=`grep -i \"EnableTimezoneSupport\" /tmp/tz-enabled.reg | awk -F= '{print $2}' | sed 's/"//g' | sed 's/\r//g'`
 
     if [ "${rc}" != "YES" ]; then
@@ -51,10 +57,10 @@ function setManualWindowsTimezone()
 {
     # sets timezone to match windows registry entry, if tz is set. 
     if [ ! -e /opt/pcr/disable_timezone_sync ]; then
-        su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/timezone.reg '${WINDOWS_TIMEZONE_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
+        su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/timezone.reg '${WINDOWS_TIMEZONE_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
         rc=`grep -i \"TimeZoneKeyName\" /tmp/timezone.reg | awk -F= '{print $2}' | sed 's/"//g' | sed 's/\r//g'`
         if [ "$rc" != "" ]; then
-            su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /opt/pcr/bin/SetTimezone.exe \"${rc}\" &" $CXUSER
+            su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /opt/pcr/bin/SetTimezone.exe \"${rc}\" &" $CXUSER
         fi
 
         rm /tmp/timezone.reg
@@ -72,7 +78,7 @@ function updateBindAddr()
 "BindAddress"="'$ifaddr'"
 ' > /tmp/RadiantBindAddr.reg
 
-    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /s /tmp/RadiantBindAddr.reg >> ${CX_LOG} 2>&1" $CXUSER
+    su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /s /tmp/RadiantBindAddr.reg >> ${CX_LOG} 2>&1" $CXUSER
     rm /tmp/RadiantBindAddr.reg
 }
 
@@ -90,7 +96,7 @@ function waitForNetwork()
 function getWineDebug()
 {
 
-    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/loglevels.reg '${WINEDEBUG_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
+    su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/loglevels.reg '${WINEDEBUG_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
     NEW_CONFIG=`grep \"WINEDEBUG\"\= /tmp/loglevels.reg | tr -d '"; \r\n' | sed 's/^WINEDEBUG=//'`
 
     # check if config has been modified
@@ -104,7 +110,7 @@ function getWineDebug()
 "WINEDEBUG"="'$WINEDEBUG_CONFIG'"
 ' > /tmp/DefaultWineDebug.reg
 
-        su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /s /tmp/DefaultWineDebug.reg >> ${CX_LOG} 2>&1" $CXUSER
+        su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /s /tmp/DefaultWineDebug.reg >> ${CX_LOG} 2>&1" $CXUSER
         rm /tmp/DefaultWineDebug.reg
     fi
 }
@@ -116,7 +122,7 @@ function log_current_wine_procs()
     touch /tmp/wineprocs.old
     chown pcrfuel:pcrfuel /tmp/wineprocs.old
     if [ ${WINE_RUNNING} == 0 ]; then
-        su -c "export DISPLAY=:0; echo 'info process' | /opt/cxoffice/bin/winedbg > /tmp/wineprocs.new" pcrfuel
+        su -c "export $DISPLAYVAR; echo 'info process' | /opt/cxoffice/bin/winedbg > /tmp/wineprocs.new" pcrfuel
     else
         rm /tmp/wineprocs.new
         touch /tmp/wineprocs.new
@@ -199,16 +205,16 @@ if [ "$#" -eq 0 ]; then
     getWineDebug
 
     echo `date "+%c"` Starting Wine
-    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /opt/pcr/bin/Panther2Wait.exe &" $CXUSER
+    su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /opt/pcr/bin/Panther2Wait.exe &" $CXUSER
     ( 
         echo `date "+%c"` Waiting for network...
         waitForNetwork
 
         echo `date "+%c"` Starting bootexec
 #        if [-e /.dockerenv ]; then
-#            su -c "export DISPLAY=:0; cd /opt/pcr/install/panther2-jagless-linux-config; ./docker-configure-run.sh" $CXUSER
+#            su -c "export $DISPLAYVAR; cd /opt/pcr/install/panther2-jagless-linux-config; ./docker-configure-run.sh" $CXUSER
 #        fi
-        su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
+        su -c "export $DISPLAYVAR;WINEDEBqUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
         # uncomment to enable file descriptor logging and statistics, it is being disabled due to some performance concerns
         # su -c "WINEDEBUG_CONFIG=${WINEDEBUG_CONFIG} CX_LOG=${CX_LOG} /usr/bin/fdtrack 2>> ${FDERR_LOG} &" -l $CXUSER
     ) &
