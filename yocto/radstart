@@ -1,0 +1,222 @@
+#!/bin/sh
+
+# Fuel Username
+CXUSER=pcrfuel
+
+# Fuel home directory
+CXUSERPATH=/home/$CXUSER
+
+export CX_LOG=$CXUSERPATH/log/crossover-bootexec.log
+
+# POS Interface (find using /sbin/ip addr show)
+POSINTERFACE=2
+
+# clam logfile
+CLAM_LOGFILE="/home/pcrfuel/Radiant/FastPoint/Log/clamav.log"
+
+# WINE Debug settings
+# Check against the old settings so that we can update to a better default
+WINEDEBUG_CONFIG_OBSOLETE="err-ole,err-mmdevapi,fixme-msg,fixme-msvcrt"
+WINEDEBUG_CONFIG="err-ole,err-mmdevapi,fixme-msg,fixme-msvcrt,+timestamp,+pid,+tid"
+JAG3_PATH="HKEY_LOCAL_MACHINE\\Software\\RadiantSystems\\JAG3"
+WINDOWS_TIMEZONE_PATH="HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\TimeZoneInformation"
+WINEDEBUG_PATH=${JAG3_PATH}"\\LOGGING"
+FDERR_LOG="${CXUSERPATH}/Radiant/FastPoint/Log/fderr.log"
+LOGFILE=/home/pcrfuel/Radiant/FastPoint/Log/radstart.service.log
+WINE_PID_LOG_UPDATE_INTERVAL=60
+
+
+if [ -e /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/audit ]; then
+    mv /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/audit /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Audit
+fi
+
+function setTimezoneFeatureFlag()
+{
+    # sets a flag to enable/disable timezone suport
+    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/tz-enabled.reg '${JAG3_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
+    rc=`grep -i \"EnableTimezoneSupport\" /tmp/tz-enabled.reg | awk -F= '{print $2}' | sed 's/"//g' | sed 's/\r//g'`
+
+    if [ "${rc}" != "YES" ]; then
+       touch /opt/pcr/disable_timezone_sync
+       rm -f /etc/localtime
+    else
+       rm /opt/pcr/disable_timezone_sync
+    fi
+
+    rm /tmp/tz-enabled.reg
+
+}
+
+function setManualWindowsTimezone()
+{
+    # sets timezone to match windows registry entry, if tz is set. 
+    if [ ! -e /opt/pcr/disable_timezone_sync ]; then
+        su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/timezone.reg '${WINDOWS_TIMEZONE_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
+        rc=`grep -i \"TimeZoneKeyName\" /tmp/timezone.reg | awk -F= '{print $2}' | sed 's/"//g' | sed 's/\r//g'`
+        if [ "$rc" != "" ]; then
+            su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /opt/pcr/bin/SetTimezone.exe \"${rc}\" &" $CXUSER
+        fi
+
+        rm /tmp/timezone.reg
+    fi
+
+}
+
+
+function updateBindAddr()
+{
+    posif="$POSINTERFACE"p
+    ifaddr=$(/sbin/ip addr show | grep "inet\b" | awk '{print $2}' | cut -d/ -f1 | sed -n $posif)
+    echo 'REGEDIT4
+[HKEY_LOCAL_MACHINE\Software\RadiantSystems]
+"BindAddress"="'$ifaddr'"
+' > /tmp/RadiantBindAddr.reg
+
+    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /s /tmp/RadiantBindAddr.reg >> ${CX_LOG} 2>&1" $CXUSER
+    rm /tmp/RadiantBindAddr.reg
+}
+
+function waitForNetwork()
+{
+
+  IPADDR=$(ip -f inet addr show `ip link show | awk '/2: / {print $2}' | cut -d":" -f1` | awk '/inet / {print $2}')
+  while [ ! $IPADDR ] || [ $(echo $IPADDR | cut -d "." -f1) == "169" ]; do
+    sleep 5
+    IPADDR=$(ip -f inet addr show `ip link show | awk '/2: / {print $2}' | cut -d":" -f1` | awk '/inet / {print $2}')
+  done
+
+}
+
+function getWineDebug()
+{
+
+    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /E /tmp/loglevels.reg '${WINEDEBUG_PATH}' >> ${CX_LOG} 2>&1" $CXUSER
+    NEW_CONFIG=`grep \"WINEDEBUG\"\= /tmp/loglevels.reg | tr -d '"; \r\n' | sed 's/^WINEDEBUG=//'`
+
+    # check if config has been modified
+    # but allow upgrade
+
+    if [ "${NEW_CONFIG}" != "" ] && [ "${NEW_CONFIG}" != "${WINEDEBUG_CONFIG_OBSOLETE}" ]; then
+        WINEDEBUG_CONFIG=${NEW_CONFIG}
+    else
+        echo 'REGEDIT4
+['${WINEDEBUG_PATH}']
+"WINEDEBUG"="'$WINEDEBUG_CONFIG'"
+' > /tmp/DefaultWineDebug.reg
+
+        su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/regedit /s /tmp/DefaultWineDebug.reg >> ${CX_LOG} 2>&1" $CXUSER
+        rm /tmp/DefaultWineDebug.reg
+    fi
+}
+
+function log_current_wine_procs()
+{
+    pidof wineserver >> /dev/null
+    WINE_RUNNING=$?
+    touch /tmp/wineprocs.old
+    chown pcrfuel:pcrfuel /tmp/wineprocs.old
+    if [ ${WINE_RUNNING} == 0 ]; then
+        su -c "export DISPLAY=:0; echo 'info process' | /opt/cxoffice/bin/winedbg > /tmp/wineprocs.new" pcrfuel
+    else
+        rm /tmp/wineprocs.new
+        touch /tmp/wineprocs.new
+        chown pcrfuel:pcrfuel /tmp/wineprocs.new
+    fi
+    diff /tmp/wineprocs.old /tmp/wineprocs.new > /dev/null
+    PROCS_CHANGED=$?
+    if [ ${PROCS_CHANGED} == 1 ]; then
+        if [ ${HOSTNAME} == "panther1" ]; then
+            echo `date "+%c"` -- WINE PID Update ---------------------------------------- >> /home/pcrfuel/log/crossover-bootexec.log
+            echo " PID      Threads Process" >> /home/pcrfuel/log/crossover-bootexec.log
+
+            cat /tmp/wineprocs.new | grep -v Wine-dbg | sort >> /home/pcrfuel/log/crossover-bootexec.log
+            echo >> /home/pcrfuel/log/crossover-bootexec.log
+
+        else
+            echo `date "+%c"` -- WINE PID Update --------------------------------------------------------------------------------- >> /home/pcrfuel/log/crossover-bootexec.log
+            echo " PID      Threads Process                                        PID      Threads Process " >> /home/pcrfuel/log/crossover-bootexec.log
+
+            diff -y /tmp/wineprocs.old /tmp/wineprocs.new | grep -v Wine-dbg | sort >> /home/pcrfuel/log/crossover-bootexec.log
+            echo >> /home/pcrfuel/log/crossover-bootexec.log
+        fi
+        cp /tmp/wineprocs.new /tmp/wineprocs.old
+    fi
+}
+
+cmd=$1
+
+# make sure that the symbolic link for $CX_LOG is valid
+# (e.g. the log directory might get deleted by running radstart.exe /wipe)
+if [ -L "${CXUSERPATH}/log" ]; then
+    if [ ! -e "${CXUSERPATH}/log" ]; then
+        logpath=$(readlink -f "${CXUSERPATH}/log")
+        su -c "mkdir -p '${logpath}'" $CXUSER
+    fi
+fi
+
+su -c "echo ----------------------------- >> $CX_LOG" $CXUSER
+su -c "echo `date` >> $CX_LOG" $CXUSER
+su -c "echo WINEDEBUG = ${WINEDEBUG_CONFIG} >> $CX_LOG" $CXUSER
+su -c "echo ----------------------------- >> $CX_LOG" $CXUSER
+
+/opt/pcr/bin/fuel/versioninfo.sh
+
+if [ -e /usr/bin/clamscan ]; then
+    echo "--------------------------------------" >> $CLAM_LOGFILE
+    echo `date "+%c"` `clamscan -V` >> $CLAM_LOGFILE
+    echo `date "+%c"` "CVD Versions:" >> $CLAM_LOGFILE
+    for CVD in main.cvd daily.cvd bytecode.cvd; do
+        if [ -e /var/lib/clamav/$CVD ]; then
+            echo `date "+%c"` "$CVD: " `strings /var/lib/clamav/$CVD | head -1 | cut -c1-28` >> $CLAM_LOGFILE
+        fi
+    done
+    echo `date "+%c"` "Schedule:" >> $CLAM_LOGFILE
+    echo `date "+%c"` "  m h dom mon dow" >> $CLAM_LOGFILE
+    if [ -e /home/pcrfuel/Radiant/FastPoint/Data/clamavSchedule ]; then
+        cat /home/pcrfuel/Radiant/FastPoint/Data/clamavSchedule | sed -e "s/^/$(date "+%c")  /">> $CLAM_LOGFILE
+    fi
+    echo " " >> $CLAM_LOGFILE
+fi
+
+touch $LOGFILE
+chown pcrfuel:pcrfuel $LOGFILE
+
+# Monitor WINE PIDs
+(
+    while true;
+    do
+        log_current_wine_procs
+        sleep ${WINE_PID_LOG_UPDATE_INTERVAL}
+    done
+) &
+
+if [ "$#" -eq 0 ]; then
+    cd "$CXUSERPATH/.cxoffice/pcrfuel/drive_c/Program Files/Radiant"
+
+    setTimezoneFeatureFlag
+    setManualWindowsTimezone
+    updateBindAddr
+    getWineDebug
+
+    echo `date "+%c"` Starting Wine
+    su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /opt/pcr/bin/Panther2Wait.exe &" $CXUSER
+    ( 
+        echo `date "+%c"` Waiting for network...
+        waitForNetwork
+
+        echo `date "+%c"` Starting bootexec
+        if [-e /.dockerenv ]; then
+            su -c "export DISPLAY=:0; cd /opt/pcr/install/panther2-jagless-linux-config; ./docker-configure-run.sh" $CXUSER
+        fi
+        su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
+        # uncomment to enable file descriptor logging and statistics, it is being disabled due to some performance concerns
+        # su -c "WINEDEBUG_CONFIG=${WINEDEBUG_CONFIG} CX_LOG=${CX_LOG} /usr/bin/fdtrack 2>> ${FDERR_LOG} &" -l $CXUSER
+    ) &
+
+elif [ "$cmd" = "--kill" ]; then
+     su -c "/opt/cxoffice/bin/wineserver -k" $CXUSER
+else
+    echo "Usage: $0 [--kill]"
+    exit
+fi
+   

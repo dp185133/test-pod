@@ -1,2 +1,19 @@
-docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/root/.Xauthority" --volume="/home/matt/contained:/opt/contained" -d -i -t $1  /bin/bash
+if [ ".$1." == ".." ]; then
+    IMAGE="jacto:latest"
+else
+    IMAGE=$1
+fi
+
+###################################################################################################
+# NOTES:
+#  --restart=unless-stopped will cause the container to always restart on exit, except with stop by docker
+#        (this could be used to simulate re-boot, although we often reboot with the purpose of applying a persisted a change, so no bueno...
+#         at least it could be used to perform a "refresh" system reboot )
+#
+# 
+#
+
+docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
+
+docker exec -it jag3 /bin/bash
 

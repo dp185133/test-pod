@@ -1,27 +1,45 @@
 FROM scratch
 ADD yocto-root.tgz /
 
-#RUN groupadd -g 1001 pcrfuel
-#
-#RUN useradd -u 1001 -g pcrfuel -d /home/pcrfuel pcrfuel \
-#    && chown -R pcrfuel:pcrfuel /home/pcrfuel
-
-#    && mkdir /home/pcrfuel \
-
-# run locale-gen en_us.utf-8
-# env lang en_us.utf-8
-
 run mkdir /opt && chown 701:701 /opt
 
-# user pcrfuel
+COPY panther2-bundle-1.0.deb /opt/
+RUN dpkg --install /opt/panther2-bundle-1.0.deb && rm -f /opt/panther2-bundle*.deb
 
-# WORKDIR /home/pcrfuel
+WORKDIR /opt/pcr/install/panther2-jagless-linux-config
+RUN /opt/pcr/install/panther2-jagless-linux-config/configure-linux.sh
 
-COPY panther2-bundle-1.134.deb /opt/
-# COPY EmeraldForecourtServices_2099.0.2.1362.cab /opt/
+COPY radstart /opt/pcr/bin
+
+COPY bin/cabextract /usr/local/bin
+COPY bin/libmspack.so.0 /usr/lib64
+
+
+###################################################################################################
+# Temporary hack to copy in new config project changes; remove this for production which
+# will get the 'latest' copy from the bundle
+#######################################################
+COPY config.tgz /opt/pcr/install
+WORKDIR /opt/pcr/install
+RUN tar -zxf config.tgz
+###################################################################################################
+
+COPY EmeraldForecourtServices_2099.0.2.1362.cab /opt/
+RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab)
+
+
+user pcrfuel
+WORKDIR /home/pcrfuel
+
+RUN ln -s /opt/pcr/install/panther2-jagless-linux-config /opt/config
+
+RUN ln -s /opt/.Xauthority /home/pcrfuel/.Xauthority
+
+#WORKDIR /opt/pcr/install/panther2-jagless-linux-config
+#RUN DISPLAY=:0 labushka all manifest=/opt/config/data/sdks.json
+
 
 ENTRYPOINT ["/usr/bin/tail", "-f", "/dev/null"]
-
-CMD ["/bin/bash", ":0"]
+# CMD ["/bin/bash", ":0"]
 # CMD ["/usr/bin/tightvncserver", ":0"]
 
