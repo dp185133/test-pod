@@ -30,6 +30,15 @@ COPY EmeraldForecourtServices_2099.0.2.1362.cab /opt/
 RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab)
 
 
+# this is some ad-hoc crap here.  Somehow radstart expects these directories,
+# maybe because we should have run Radio install before we run
+# radstart?  I don't know.
+RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Bin
+RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
+RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Data
+RUN chown -R pcrfuel:pcrfuel /home/pcrfuel/.wine
+
+
 user pcrfuel
 WORKDIR /home/pcrfuel
 
@@ -37,8 +46,7 @@ RUN ln -s /opt/pcr/install/panther2-jagless-linux-config /opt/config
 
 RUN ln -s /opt/.Xauthority /home/pcrfuel/.Xauthority
 
-#WORKDIR /opt/pcr/install/panther2-jagless-linux-config
-#RUN DISPLAY=:0 labushka all manifest=/opt/config/data/sdks.json
+
 
 
 #ENTRYPOINT ["/sbin/init"]

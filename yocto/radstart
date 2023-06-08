@@ -205,9 +205,9 @@ if [ "$#" -eq 0 ]; then
         waitForNetwork
 
         echo `date "+%c"` Starting bootexec
-        if [-e /.dockerenv ]; then
-            su -c "export DISPLAY=:0; cd /opt/pcr/install/panther2-jagless-linux-config; ./docker-configure-run.sh" $CXUSER
-        fi
+#        if [-e /.dockerenv ]; then
+#            su -c "export DISPLAY=:0; cd /opt/pcr/install/panther2-jagless-linux-config; ./docker-configure-run.sh" $CXUSER
+#        fi
         su -c "export DISPLAY=:0;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
         # uncomment to enable file descriptor logging and statistics, it is being disabled due to some performance concerns
         # su -c "WINEDEBUG_CONFIG=${WINEDEBUG_CONFIG} CX_LOG=${CX_LOG} /usr/bin/fdtrack 2>> ${FDERR_LOG} &" -l $CXUSER
