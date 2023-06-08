@@ -41,8 +41,9 @@ RUN ln -s /opt/.Xauthority /home/pcrfuel/.Xauthority
 #RUN DISPLAY=:0 labushka all manifest=/opt/config/data/sdks.json
 
 
-ENTRYPOINT ["/sbin/init"]
-#ENTRYPOINT ["/usr/bin/tail", "-f", "/dev/null"]
+#ENTRYPOINT ["/sbin/init"]
+
 # CMD ["/bin/bash", ":0"]
 # CMD ["/usr/bin/tightvncserver", ":0"]
 
+ENTRYPOINT ["/usr/bin/tail", "-f", "/dev/null"]
