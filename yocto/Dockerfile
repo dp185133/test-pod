@@ -9,7 +9,7 @@ RUN dpkg --install /opt/panther2-bundle-1.0.deb && rm -f /opt/panther2-bundle*.d
 WORKDIR /opt/pcr/install/panther2-jagless-linux-config
 RUN /opt/pcr/install/panther2-jagless-linux-config/configure-linux.sh
 
-COPY radstart /opt/pcr/bin
+COPY radstart /usr/bin
 
 COPY bin/cabextract /usr/local/bin
 COPY bin/libmspack.so.0 /usr/lib64
