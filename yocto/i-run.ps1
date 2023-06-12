@@ -1,8 +1,16 @@
+#!/usr/bin/env sh
+echo --% >/dev/null;: ' | out-null
+<#'
+
 if [ ".$1." == ".." ]; then
     IMAGE="jacto:latest"
 else
     IMAGE=$1
 fi
+
+########################################################################################
+# https://stackoverflow.com/questions/39421131/is-it-possible-to-write-one-script-that-runs-in-bash-shell-and-powershell
+########################################################################################
 
 ###################################################################################################
 # NOTES:
@@ -13,7 +21,10 @@ fi
 # 
 #
 
+#>
+
 docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
 
 docker exec -it jag3 /bin/bash
+
 
