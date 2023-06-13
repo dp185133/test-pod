@@ -1,5 +1,7 @@
 #!/bin/sh
 
+/usr/bin/sitetrust.sh 2>&1 > /var/log/sitetrust.log&
+
 # Fuel Username
 CXUSER=pcrfuel
 
