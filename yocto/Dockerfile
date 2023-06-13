@@ -1,6 +1,52 @@
 FROM scratch
 ADD yocto-root.tgz /
 
+
+########################################################################################
+# exposed ports
+########################################################################################
+# Not sure about the necessity of these; connections seem to work from our host without
+# these even being present in expose statements, so... ??
+EXPOSE 5901 # vncviewer
+EXPOSE 3131 # radio commands
+EXPOSE 5006/udp # radio heartbeats
+EXPOSE 4237/udp # devman fault tolerance??
+EXPOSE 1127 # teleq
+expose 1128/udp # teleq heartbeats
+expose 22 # ssh/dropbear
+expose 452 # SiteTrust
+
+expose 4780 # gilbarco
+expose 4870 # gilbarco
+expose 4871 # gilbarco
+expose 5200/udp Gilbarco
+expose 5150 # optic
+
+expose 5160 # ICR connect
+expose 5161 # ICR Connect
+
+expose 5959 # IFSF FDC
+expose 5960 # IFSF FDC
+
+expose 8413 # Additech
+
+expose 8181 # Icarus test interface
+expose 8182 # BDD Services
+expose 8183 # Devman test interface
+expose 5200/udp # SMClient heartbeats
+
+# SerialLink
+expose 46886
+expose 47142
+expose 47654
+expose 60120/udp
+
+expose 1400 # Emerald / TcpCom?
+expose 4004 # Kroger POS
+expose 4006 # Shell Mobile
+expose 5100 # Logger?
+########################################################################################
+
 COPY data/profile /etc/profile
 
 # X11 necessities and tightvnc server
