@@ -1,7 +1,16 @@
 FROM scratch
 ADD yocto-root.tgz /
 
-run mkdir /opt && chown 701:701 /opt
+COPY data/profile /etc/profile
+
+# X11 necessities and tightvnc server
+run mkdir -p /opt/pcr/data && chown -R 701:701 /opt
+COPY data/vnc-passwd /opt/pcr/data
+COPY bin/libjpeg.so.8 /usr/lib64/
+ADD bin/x11.tgz /
+
+COPY bin/tightvncserver_1.3.10-0ubuntu4_amd64.deb /opt/
+RUN dpkg --ignore-depends=perl:any,libc6,libjpeg8,libx11-6,zlib1g,x11-common,xserver-common,x11-utils,xauth --install /opt/tightvncserver_1.3.10-0ubuntu4_amd64.deb 
 
 COPY panther2-bundle-1.0.deb /opt/
 RUN dpkg --install /opt/panther2-bundle-1.0.deb && rm -f /opt/panther2-bundle*.deb
@@ -15,6 +24,8 @@ WORKDIR /opt/pcr/install
 RUN tar -zxf config.tgz
 ###################################################################################################
 
+
+
 WORKDIR /opt/pcr/install/panther2-jagless-linux-config
 RUN /opt/pcr/install/panther2-jagless-linux-config/configure-linux.sh
 
@@ -24,6 +35,8 @@ RUN chmod a+x /usr/bin/radstart
 COPY bin/cabextract /usr/local/bin
 COPY bin/libmspack.so.0 /usr/lib64
 
+RUN mkdir -p /opt/pcr/bin
+COPY bin/BDDServices.exe /opt/pcr/bin
 
 
 COPY EmeraldForecourtServices_2099.0.2.1362.cab /opt/

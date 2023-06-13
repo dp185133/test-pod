@@ -21,10 +21,28 @@ fi
 # 
 #
 
+if false; then
+    echo running with X sockets and host network
+    docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
+else
+    echo running no X no host network
+    docker run -h panther2 --name jag3 --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
+fi
+
+docker exec -it jag3 /opt/config/docker-configure-run.sh
+
+exit 0
 #>
+$IMAGE="jacto:latest"
 
-docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
+if ($false) {
+    docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
+} else {
+    docker run -h panther2 --name jag3 --volume="/persist:/persist" -d -i -t $IMAGE  /bin/bash
+}
 
-docker exec -it jag3 /bin/bash
+docker exec -it jag3 /opt/config/docker-configure-run.sh
+
+# docker exec -it jag3 /bin/bash
 
 
