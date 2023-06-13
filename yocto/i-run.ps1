@@ -1,8 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 echo --% >/dev/null;: ' | out-null
 <#'
 
-if [ ".$1." == ".." ]; then
+if [ "$1" == "" ]; then
     IMAGE="jacto:latest"
 else
     IMAGE=$1
