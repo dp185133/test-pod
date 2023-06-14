@@ -33,7 +33,7 @@ expose 4870
 expose 4871
 # Gilbarco
 expose 5200/udp
-# optic
+# optic / WayneIX DC Server
 expose 5150
 
 # ICR connect
@@ -127,6 +127,8 @@ RUN chown -R pcrfuel:pcrfuel /home/pcrfuel/.wine
 
 user pcrfuel
 WORKDIR /home/pcrfuel
+
+COPY data/.bashrc /home/pcrfuel/.bashrc
 
 RUN ln -s /opt/pcr/install/panther2-jagless-linux-config /opt/config
 

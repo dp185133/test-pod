@@ -189,6 +189,7 @@ fi
 touch $LOGFILE
 chown pcrfuel:pcrfuel $LOGFILE
 
+
 # Monitor WINE PIDs
 (
     while true;
@@ -208,6 +209,13 @@ if [ "$#" -eq 0 ]; then
 
     echo `date "+%c"` Starting Wine
     su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /opt/pcr/bin/Panther2Wait.exe &" $CXUSER
+
+    if grep JAGLESSJAG /etc/profile > /dev/null; then
+        pushd /fp/bin
+        su -c "export $DISPLAYVAR;WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 /fp/bin/BDDServices.exe &" $CXUSER
+        popd
+    fi
+    
     ( 
         echo `date "+%c"` Waiting for network...
         waitForNetwork
