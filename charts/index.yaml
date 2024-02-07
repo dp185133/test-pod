@@ -6,7 +6,7 @@ entries:
     created: "2024-02-07T09:35:50.299514-05:00"
     description: Helm chart for vxFuel on Edge
     digest: 6020933ec22ab7ec54f1fc49783150df08f88136dfdc5bb86fd03035b2aa6446
-    name: rocky
+    name: vxfuel
     type: application
     urls:
     - docs/vxfuel-0.1.0.tgz
