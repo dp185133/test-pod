@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rocky-deployment
+  labels:
+    app: rocky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocky
+  template:
+    metadata:
+      labels:
+        app: rocky
+    spec:
+      containers:
+      - name: rocky
+        image: todkap/rocky:1.0.0
+        ports:
+        - containerPort: 3000
+

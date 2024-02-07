@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  vxfuel:
+  - apiVersion: v1
+    appVersion: 0.1.0
+    created: "2024-02-07T09:35:50.299514-05:00"
+    description: Helm chart for vxFuel on Edge
+    digest: d5306fc06dd2b4aaf5dd9749ac02db5789e13a909f3e15529efd8f5ef1eb1e9c
+    name: rocky
+    type: application
+    urls:
+    - docs/vxfuel-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-02-07T09:35:50.298068-05:00"
