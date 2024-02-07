@@ -17,6 +17,6 @@ spec:
       hostname: panther2
       containers:
       - name: vxfuel
-        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:latest"
+        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:latest
 #        ports:
 #        - containerPort: 80
