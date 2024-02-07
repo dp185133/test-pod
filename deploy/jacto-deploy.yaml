@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jacto-deployment
+  name: vxfuel-deployment
   labels:
-    app: jacto
+    app: vxfuel
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: jacto
+      app: vxfuel
   template:
     metadata:
       labels:
-        app: jacto
+        app: vxfuel
     spec:
       hostname: panther2
       containers:
-      - name: jacto
-        image: localhost:5001/jacto:latest
+      - name: vxfuel
+        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:latest"
 #        ports:
 #        - containerPort: 80
