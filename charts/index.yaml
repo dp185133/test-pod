@@ -5,7 +5,7 @@ entries:
     appVersion: 0.1.0
     created: "2024-02-07T09:35:50.299514-05:00"
     description: Helm chart for vxFuel on Edge
-    digest: d5306fc06dd2b4aaf5dd9749ac02db5789e13a909f3e15529efd8f5ef1eb1e9c
+    digest: 6020933ec22ab7ec54f1fc49783150df08f88136dfdc5bb86fd03035b2aa6446
     name: rocky
     type: application
     urls:
