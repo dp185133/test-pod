@@ -17,6 +17,7 @@ pushd /tmp/.X11-unix
 TMPDISPLAY=`ls -1 * | head`
 DISPLAYNUM=${TMPDISPLAY#X}
 DISPLAYVAR="DISPLAY=:${DISPLAYNUM}"
+echo $DISPLAYVAR > /fp/log/DISPLAYVAR.txt
 popd
 
 # clam logfile

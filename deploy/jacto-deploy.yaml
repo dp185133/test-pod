@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jacto-deployment
+  labels:
+    app: jacto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jacto
+  template:
+    metadata:
+      labels:
+        app: jacto
+    spec:
+      hostname: panther2
+      containers:
+      - name: jacto
+        image: localhost:5001/jacto:latest
+#        ports:
+#        - containerPort: 80

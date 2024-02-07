@@ -30,6 +30,8 @@ if false; then
     docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
 else
     echo running no X no host network
+# what was this "publishports"?
+#    docker run -h panther2 --name jag3 --volume="/home/matt/persist:/persist" `publishports` -d -i -t $IMAGE  /bin/bash
     docker run -h panther2 --name jag3 --volume="/home/matt/persist:/persist" `publishports` -d -i -t $IMAGE  /bin/bash
 fi
 
