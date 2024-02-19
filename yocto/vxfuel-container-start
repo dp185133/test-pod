@@ -1,13 +1,24 @@
 #!/bin/sh
+# Modified from original "radstart" script in device environment.
+# Container will run without security service, and legacy RPOS "radstart" requires the
+# security service to make progress.  The legacy RadStart / SMClient bootstrapping
+# mechanism is not a great fit for containerization, because containers rely on
+# the container management framework (originally NCR Edge) to update applications.
+# Also it is not clear whether SecurityService will be used in containerized environment;
+# possibly, but maybe not, and not for the purpose of early demonstration which can
+# be bootstrapped more quickly without TLS peer authentication requirements.
+USE_BOOTEXEC=true
+
 export PATH=/sbin:/usr/sbin:$PATH
 
-# /usr/bin/sitetrust.sh 2>&1 > /var/log/sitetrust.log&
+# remove sitetrust from container environment
+sudo /usr/bin/sitetrust.sh 2>&1 > /var/log/sitetrust.log&
 
 # start mosquitto
-nohup /usr/sbin/mosquitto 2>&1 > /fp/log/mosquitto.log&
+nohup /usr/sbin/mosquitto -c /etc/mosquitto/mosquitto.conf 2>&1 > /fp/log/mosquitto.log&
 
 # Fuel Username
-CXUSER=pcrfuel
+export CXUSER=pcrfuel
 
 # Fuel home directory
 CXUSERPATH=/home/$CXUSER
@@ -20,8 +31,9 @@ POSINTERFACE=2
 pushd /tmp/.X11-unix
 TMPDISPLAY=`ls -1 * | head`
 DISPLAYNUM=${TMPDISPLAY#X}
-DISPLAYVAR="DISPLAY=:${DISPLAYNUM}"
+export DISPLAYVAR="DISPLAY=:${DISPLAYNUM}"
 echo $DISPLAYVAR > /fp/log/DISPLAYVAR.txt
+export DISPLAY=:${DISPLAYNUM}
 popd
 
 # clam logfile
@@ -30,7 +42,7 @@ CLAM_LOGFILE="/home/pcrfuel/Radiant/FastPoint/Log/clamav.log"
 # WINE Debug settings
 # Check against the old settings so that we can update to a better default
 WINEDEBUG_CONFIG_OBSOLETE="err-ole,err-mmdevapi,fixme-msg,fixme-msvcrt"
-WINEDEBUG_CONFIG="err-ole,err-mmdevapi,fixme-msg,fixme-msvcrt,+timestamp,+pid,+tid"
+export WINEDEBUG_CONFIG="err-ole,err-mmdevapi,fixme-msg,fixme-msvcrt,+timestamp,+pid,+tid"
 JAG3_PATH="HKEY_LOCAL_MACHINE\\Software\\RadiantSystems\\JAG3"
 WINDOWS_TIMEZONE_PATH="HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\TimeZoneInformation"
 WINEDEBUG_PATH=${JAG3_PATH}"\\LOGGING"
@@ -92,10 +104,10 @@ function updateBindAddr()
 function waitForNetwork()
 {
 
-  IPADDR=$(ip -f inet addr show `ip link show | awk '/2: / {print $2}' | cut -d":" -f1` | awk '/inet / {print $2}')
+  IPADDR=$(ip -f inet addr show `ip link show | awk '/[2-9]: / {print $2}' | cut -d":" -f1` | awk '/inet / {print $2}')
   while [ ! $IPADDR ] || [ $(echo $IPADDR | cut -d "." -f1) == "169" ]; do
     sleep 5
-    IPADDR=$(ip -f inet addr show `ip link show | awk '/2: / {print $2}' | cut -d":" -f1` | awk '/inet / {print $2}')
+    IPADDR=$(ip -f inet addr show `ip link show | awk '/[2-9]: / {print $2}' | cut -d":" -f1` | awk '/inet / {print $2}')
   done
 
 }
@@ -174,22 +186,24 @@ su -c "echo ----------------------------- >> $CX_LOG" $CXUSER
 
 /opt/pcr/bin/fuel/versioninfo.sh
 
-if [ -e /usr/bin/clamscan ]; then
-    echo "--------------------------------------" >> $CLAM_LOGFILE
-    echo `date "+%c"` `clamscan -V` >> $CLAM_LOGFILE
-    echo `date "+%c"` "CVD Versions:" >> $CLAM_LOGFILE
-    for CVD in main.cvd daily.cvd bytecode.cvd; do
-        if [ -e /var/lib/clamav/$CVD ]; then
-            echo `date "+%c"` "$CVD: " `strings /var/lib/clamav/$CVD | head -1 | cut -c1-28` >> $CLAM_LOGFILE
-        fi
-    done
-    echo `date "+%c"` "Schedule:" >> $CLAM_LOGFILE
-    echo `date "+%c"` "  m h dom mon dow" >> $CLAM_LOGFILE
-    if [ -e /home/pcrfuel/Radiant/FastPoint/Data/clamavSchedule ]; then
-        cat /home/pcrfuel/Radiant/FastPoint/Data/clamavSchedule | sed -e "s/^/$(date "+%c")  /">> $CLAM_LOGFILE
-    fi
-    echo " " >> $CLAM_LOGFILE
-fi
+#### Remove AV scan mechanisms for container
+#### 
+####if [ -e /usr/bin/clamscan ]; then
+####    echo "--------------------------------------" >> $CLAM_LOGFILE
+####    echo `date "+%c"` `clamscan -V` >> $CLAM_LOGFILE
+####    echo `date "+%c"` "CVD Versions:" >> $CLAM_LOGFILE
+####    for CVD in main.cvd daily.cvd bytecode.cvd; do
+####        if [ -e /var/lib/clamav/$CVD ]; then
+####            echo `date "+%c"` "$CVD: " `strings /var/lib/clamav/$CVD | head -1 | cut -c1-28` >> $CLAM_LOGFILE
+####        fi
+####    done
+####    echo `date "+%c"` "Schedule:" >> $CLAM_LOGFILE
+####    echo `date "+%c"` "  m h dom mon dow" >> $CLAM_LOGFILE
+####    if [ -e /home/pcrfuel/Radiant/FastPoint/Data/clamavSchedule ]; then
+####        cat /home/pcrfuel/Radiant/FastPoint/Data/clamavSchedule | sed -e "s/^/$(date "+%c")  /">> $CLAM_LOGFILE
+####    fi
+####    echo " " >> $CLAM_LOGFILE
+####fi
 
 touch $LOGFILE
 chown pcrfuel:pcrfuel $LOGFILE
@@ -221,17 +235,26 @@ if [ "$#" -eq 0 ]; then
         popd
     fi
     
-    ( 
-        echo `date "+%c"` Waiting for network...
-        waitForNetwork
+    (
+        # dmp/24.0213: shouldn't need to wait for network on container
+#        echo `date "+%c"` Waiting for network...
+#        waitForNetwork
 
         echo `date "+%c"` Starting bootexec
+
+        if $USE_BOOTEXEC; then
+            # uncomment to enable file descriptor logging and statistics, it is being disabled due to some performance concerns
+            su -c "WINEDEBUG_CONFIG=${WINEDEBUG_CONFIG} CX_LOG=${CX_LOG} /usr/bin/fdtrack 2>> ${FDERR_LOG} &" -l $CXUSER
+        else
+            # try to start parts individually without sitetrust / bootexec RPOS bootstrapping.
+            # This should start DevMan, Icarus, PriceChangeManager, but won't have TeleQ...
+            # So JagEventManager / RadPipe logging won't function.
+            su -c "export $DISPLAYVAR; vxfuel-run-win32-fuel-parts" $CXUSER
+        fi
+        
 #        if [-e /.dockerenv ]; then
 #            su -c "export $DISPLAYVAR; cd /opt/pcr/install/panther2-jagless-linux-config; ./docker-configure-run.sh" $CXUSER
 #        fi
-        su -c "export $DISPLAYVAR;WINEDEBqUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
-        # uncomment to enable file descriptor logging and statistics, it is being disabled due to some performance concerns
-        # su -c "WINEDEBUG_CONFIG=${WINEDEBUG_CONFIG} CX_LOG=${CX_LOG} /usr/bin/fdtrack 2>> ${FDERR_LOG} &" -l $CXUSER
     ) &
 
 elif [ "$cmd" = "--kill" ]; then
@@ -241,3 +264,8 @@ else
     exit
 fi
    
+while true; do
+    echo "vxfuel-container-start, wait: " `date`
+    sleep 60
+done
+    

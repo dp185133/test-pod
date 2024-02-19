@@ -1,6 +1,9 @@
 FROM scratch
-ADD yocto-root.tgz /
 
+ARG VXFUEL_BUNDLE
+ARG VXFUEL_CAB
+
+ADD yocto-root.tgz /
 
 ########################################################################################
 # exposed ports
@@ -10,6 +13,11 @@ ADD yocto-root.tgz /
 
 # vncviewer
 EXPOSE 5901
+
+# Mosquitto
+EXPOSE 1883
+
+
 # radio commands
 EXPOSE 3131
 # radio heartbeats
@@ -24,6 +32,7 @@ expose 1128/udp
 expose 22
 # SiteTrust
 expose 452
+expose 451
 
 # gilbarco
 expose 4780
@@ -58,11 +67,6 @@ expose 8183
 # SMClient heartbeats
 expose 5200/udp
 
-# SerialLink
-expose 46886
-expose 47142
-expose 47654
-expose 60120/udp
 
 # Emerald / TcpCom?
 expose 1400
@@ -76,17 +80,63 @@ expose 5100
 
 COPY data/profile /etc/profile
 
+
+
+
 # X11 necessities and tightvnc server
 run mkdir -p /opt/pcr/data && chown -R 701:701 /opt
 COPY data/vnc-passwd /opt/pcr/data
 COPY bin/libjpeg.so.8 /usr/lib64/
 ADD bin/x11.tgz /
 
+run mkdir /opt/log && chown 701:701 /opt/log
+
+########################################################################################
+# without a minimal 'init' process, the container accumulates zombie processes.
+# So we steal a debian build of tini here to serve as our container init.
+########################################################################################
+run mkdir -p /opt/pkg
+
+COPY bin/tini_0.19.0-1_amd64.deb /opt/pkg/
+RUN dpkg --ignore-depends=libc6 --install /opt/pkg/tini_0.19.0-1_amd64.deb
+
+
+########################################################################################
+# PERL INSTALL FOR NEW ROOT
+########################################################################################
+COPY pkg/perl-base_5.28.1-6+deb10u1_amd64.deb /opt/pkg/
+RUN dpkg --ignore-depends=dpkg,libc6,libcrypt1 --install /opt/pkg/perl-base_5.28.1-6+deb10u1_amd64.deb
+
+COPY pkg/perl-modules-5.28_5.28.1-6+deb10u1_all.deb /opt/pkg/
+RUN dpkg --ignore-depends=dpkg,libc6,libcrypt1 --install /opt/pkg/perl-modules-5.28_5.28.1-6+deb10u1_all.deb
+
+COPY pkg/libperl5.28_5.28.1-6+deb10u1_amd64.deb /opt/pkg/
+RUN dpkg --ignore-depends=dpkg,libc6,libcrypt1,libbz2-1.0,libdb5.3,libgdbm-compat4,libgdbm6,zlib1g --install /opt/pkg/libperl5.28_5.28.1-6+deb10u1_amd64.deb
+
+COPY pkg/perl_5.28.1-6+deb10u1_amd64.deb /opt/pkg/
+
+
+
+
+
 COPY bin/tightvncserver_1.3.10-0ubuntu4_amd64.deb /opt/
 RUN dpkg --ignore-depends=perl:any,libc6,libjpeg8,libx11-6,zlib1g,x11-common,xserver-common,x11-utils,xauth --install /opt/tightvncserver_1.3.10-0ubuntu4_amd64.deb 
 
-COPY panther2-bundle-1.0.deb /opt/
-RUN dpkg --install /opt/panther2-bundle-1.0.deb && rm -f /opt/panther2-bundle*.deb
+########################################################################################
+# MOSQUITTO INSTALL FOR OLD ROOT
+########################################################################################
+# COPY bin/mosquitto_1.5.8-r0_amd64.deb /opt/
+# RUN dpkg --force-all --ignore-depends=shadow,base-files,base-passwd,initd-functions,libc6,libcrypto1.1,libssl1.1,libsystemd0,libuuid1 --install /opt/mosquitto_1.5.8-r0_amd64.deb
+# RUN dpkg --ignore-depends=shadow,base-files,base-passwd,initd-functions,libc6,libcrypto1.1,libssl1.1,libsystemd0,libuuid1 --unpack /opt/mosquitto_1.5.8-r0_amd64.deb
+# RUN rm -f /var/lib/dpkg/info/mosquitto.postinst 
+# RUN dpkg --ignore-depends=shadow,base-files,base-passwd,initd-functions,libc6,libcrypto1.1,libssl1.1,libsystemd0,libuuid1 --configure mosquitto
+# COPY bin/libmosquitto1_1.5.8-r0_amd64.deb /opt/
+# RUN dpkg --ignore-depends=libc6,libcrypto1.1,libssl1.1 --install /opt/libmosquitto1_1.5.8-r0_amd64.deb
+
+
+COPY ${VXFUEL_BUNDLE} /opt/
+RUN dpkg --install /opt/${VXFUEL_BUNDLE} && rm -f /opt/panther2-bundle*.deb
+RUN rm -f /opt/pcr/pkg/crossover-panther1-*
 
 ###################################################################################################
 # Temporary hack to copy in new config project changes; remove this for production which
@@ -102,8 +152,11 @@ RUN tar -zxf config.tgz
 WORKDIR /opt/pcr/install/panther2-jagless-linux-config
 RUN /opt/pcr/install/panther2-jagless-linux-config/configure-linux.sh
 
-COPY radstart /usr/bin
-RUN chmod a+x /usr/bin/radstart
+COPY vxfuel-container-start /usr/bin
+RUN chmod a+x /usr/bin/vxfuel-container-start
+
+COPY vxfuel-run-win32-fuel-parts /usr/bin
+RUN chmod a+x /usr/bin/vxfuel-run-win32-fuel-parts
 
 COPY bin/cabextract /usr/local/bin
 COPY bin/libmspack.so.0 /usr/lib64
@@ -112,16 +165,20 @@ RUN mkdir -p /opt/pcr/bin
 COPY bin/BDDServices.exe /opt/pcr/bin
 
 
-COPY EmeraldForecourtServices_2099.0.2.1362.cab /opt/
-RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab)
+COPY JAG_MQTT_Binaries_2099.0.2.2044.zip /opt/
+COPY ${VXFUEL_CAB} /opt/
+RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab; unzip /opt/JAG_MQTT_*.zip)
+
+
 
 
 # this is some ad-hoc crap here.  Somehow radstart expects these directories,
 # maybe because we should have run Radio install before we run
 # radstart?  I don't know.
 RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Bin
-RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
 RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Data
+# RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
+RUN ln -s /persist/log /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
 RUN chown -R pcrfuel:pcrfuel /home/pcrfuel/.wine
 
 

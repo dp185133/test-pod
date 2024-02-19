@@ -1,3 +1,3 @@
-docker stop jag3
-docker rm jag3
-docker image rm jacto:latest
+docker stop c-vxfuel
+docker rm c-vxfuel
+docker image rm vxfuel:latest
