@@ -90,6 +90,9 @@ COPY bin/libjpeg.so.8 /usr/lib64/
 ADD bin/x11.tgz /
 
 run mkdir /opt/log && chown 701:701 /opt/log
+run mkdir /opt/pcr/container && chown 701:701 /opt/pcr/container
+COPY script/sitetrust.sh /opt/pcr/container
+run chmod a+x /opt/pcr/container/sitetrust.sh
 
 ########################################################################################
 # without a minimal 'init' process, the container accumulates zombie processes.
@@ -176,9 +179,10 @@ RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForec
 # maybe because we should have run Radio install before we run
 # radstart?  I don't know.
 RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Bin
-RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Data
+# RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Data
 # RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
 RUN ln -s /persist/log /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
+RUN ln -s /persist/data /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Data
 RUN chown -R pcrfuel:pcrfuel /home/pcrfuel/.wine
 
 

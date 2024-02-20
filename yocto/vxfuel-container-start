@@ -9,10 +9,8 @@
 # be bootstrapped more quickly without TLS peer authentication requirements.
 USE_BOOTEXEC=true
 
-export PATH=/sbin:/usr/sbin:$PATH
 
-# remove sitetrust from container environment
-sudo /usr/bin/sitetrust.sh 2>&1 > /var/log/sitetrust.log&
+export PATH=/sbin:/usr/sbin:$PATH
 
 # start mosquitto
 nohup /usr/sbin/mosquitto -c /etc/mosquitto/mosquitto.conf 2>&1 > /fp/log/mosquitto.log&
@@ -240,11 +238,16 @@ if [ "$#" -eq 0 ]; then
 #        echo `date "+%c"` Waiting for network...
 #        waitForNetwork
 
-        echo `date "+%c"` Starting bootexec
+        echo `date "+%c"` vxfuel-container-start: Starting sitetrust
+
+# remove sitetrust from container environment
+sudo sitetrust.sh 2>&1 > /var/log/sitetrust.log&
+
+echo `date "+%c"` vxfuel-container-start: Starting bootexec
 
         if $USE_BOOTEXEC; then
             # uncomment to enable file descriptor logging and statistics, it is being disabled due to some performance concerns
-            su -c "WINEDEBUG_CONFIG=${WINEDEBUG_CONFIG} CX_LOG=${CX_LOG} /usr/bin/fdtrack 2>> ${FDERR_LOG} &" -l $CXUSER
+            su -c "export RPOS_PROCESS_NODE_NUMBER=100; WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
         else
             # try to start parts individually without sitetrust / bootexec RPOS bootstrapping.
             # This should start DevMan, Icarus, PriceChangeManager, but won't have TeleQ...

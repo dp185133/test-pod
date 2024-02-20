@@ -42,6 +42,7 @@ else
 fi
 
 # docker exec -it c-vxfuel /opt/config/docker-configure-run.sh
+docker exec -it c-vxfuel /bin/bash --login
 
 exit 0
 ########################################################################################
