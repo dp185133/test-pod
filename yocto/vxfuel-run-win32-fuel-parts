@@ -2,14 +2,16 @@
 # DISPLAYVAR, WINEDEBUG_CONFIG, CX_LOG exported by vxfuel-container-start
 export CXUSER=pcrfuel
 export CXUSERPATH=/home/$CXUSER
-export CX_LOG=$CXUSERPATH/log/crossover-bootexec.log
+export CX_LOG=$CXUSERPATH/log/crossover
 
 
-WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.jem 2>&1 /fp/bin/JagEventManager.exe&
+WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.teleq.log 2>&1 /fp/bin/TeleQ.exe&
 sleep 2
-WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.pcm 2>&1 /fp/bin/PriceChangeManager.exe&
+WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.jem.log 2>&1 /fp/bin/JagEventManager.exe&
+sleep 2
+WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.pcm.log 2>&1 /fp/bin/PriceChangeManager.exe&
 sleep 1
-WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.devman 2>&1 /fp/bin/DevMan.exe&
+WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.devman.log 2>&1 /fp/bin/DevMan.exe&
 sleep 1
-WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.icarus 2>&1 /fp/bin/Icarus.exe&
+WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.icarus.log 2>&1 /fp/bin/Icarus.exe&
 

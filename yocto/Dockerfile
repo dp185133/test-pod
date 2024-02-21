@@ -2,6 +2,7 @@ FROM scratch
 
 ARG VXFUEL_BUNDLE
 ARG VXFUEL_CAB
+ARG VXFUEL_MQTT
 
 ADD yocto-root.tgz /
 
@@ -168,10 +169,9 @@ RUN mkdir -p /opt/pcr/bin
 COPY bin/BDDServices.exe /opt/pcr/bin
 
 
-COPY JAG_MQTT_Binaries_2099.0.2.2044.zip /opt/
+COPY ${VXFUEL_MQTT} /opt/
 COPY ${VXFUEL_CAB} /opt/
-RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab; unzip /opt/JAG_MQTT_*.zip)
-
+RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab; unzip /opt/JAG_MQTT_*.zip && rm /opt/JAG_MQTT_*.zip)
 
 
 

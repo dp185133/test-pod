@@ -7,7 +7,7 @@
 # Also it is not clear whether SecurityService will be used in containerized environment;
 # possibly, but maybe not, and not for the purpose of early demonstration which can
 # be bootstrapped more quickly without TLS peer authentication requirements.
-USE_BOOTEXEC=true
+USE_BOOTEXEC=false
 
 
 export PATH=/sbin:/usr/sbin:$PATH

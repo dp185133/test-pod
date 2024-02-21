@@ -36,13 +36,17 @@ else
     echo running with embedded X tightvnc service
 
 # "publishports": function at the top of this file that exposes specific ports
-#    docker run -h panther2 --name jag3 --volume="/home/matt/persist:/persist" `publishports` -d -i -t $IMAGE  /bin/bash
+    #    docker run -h panther2 --name jag3 --volume="/home/matt/persist:/persist" `publishports` -d -i -t $IMAGE  /bin/bash
+    rm -f ~/persist/log/*.zip
+    rm -f ~/persist/log/eventfile*
+    rm -f ~/persist/log/*.log
+    rm -f ~/persist/log/*log*.json
     
     docker run --init -h panther2 --name c-vxfuel --volume="/home/matt/persist:/persist" `publishports` -d -i -t $IMAGE  /bin/bash
 fi
 
-# docker exec -it c-vxfuel /opt/config/docker-configure-run.sh
-docker exec -it c-vxfuel /bin/bash --login
+docker exec -it c-vxfuel /opt/config/docker-configure-run.sh
+# docker exec -it c-vxfuel /bin/bash --login
 
 exit 0
 ########################################################################################
