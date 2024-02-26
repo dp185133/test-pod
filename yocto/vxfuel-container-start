@@ -7,7 +7,7 @@
 # Also it is not clear whether SecurityService will be used in containerized environment;
 # possibly, but maybe not, and not for the purpose of early demonstration which can
 # be bootstrapped more quickly without TLS peer authentication requirements.
-USE_BOOTEXEC=false
+USE_BOOTEXEC=true
 
 
 export PATH=/sbin:/usr/sbin:$PATH
@@ -243,16 +243,16 @@ if [ "$#" -eq 0 ]; then
 # remove sitetrust from container environment
 sudo sitetrust.sh 2>&1 > /var/log/sitetrust.log&
 
-echo `date "+%c"` vxfuel-container-start: Starting bootexec
+echo `date "+%c"` vxfuel-container-start: Starting bootexec=$USE_BOOTEXEC
 
         if $USE_BOOTEXEC; then
             # uncomment to enable file descriptor logging and statistics, it is being disabled due to some performance concerns
-            su -c "export RPOS_PROCESS_NODE_NUMBER=100; WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
+            su -c "export $DISPLAYVAR; umask 0002; export RPOS_PROCESS_NODE_NUMBER=100; WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG} 2>&1 ./Radio/Bin/bootexec.exe /CE_COMPACT_REGISTRY &" $CXUSER
         else
             # try to start parts individually without sitetrust / bootexec RPOS bootstrapping.
             # This should start DevMan, Icarus, PriceChangeManager, but won't have TeleQ...
             # So JagEventManager / RadPipe logging won't function.
-            su -c "export $DISPLAYVAR; vxfuel-run-win32-fuel-parts" $CXUSER
+            su -c "export $DISPLAYVAR; umask 0002; vxfuel-run-win32-fuel-parts" $CXUSER
         fi
         
 #        if [-e /.dockerenv ]; then

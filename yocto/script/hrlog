@@ -1,0 +1,52 @@
+#!/usr/bin/env lua
+--*-lua-*--
+
+local json = require 'dkjson'
+
+local threadIds = {}
+local numThreadIds = 0
+
+local function printFormattedJson(msg)
+   local tid = msg.ThreadId
+   
+   if tid then
+      if not threadIds[tid] then
+         numThreadIds = numThreadIds + 1
+         threadIds[tid] = true
+      end
+   end
+   
+   local day, time = string.match(msg['@t'], '%d%d%d%d%-(%d%d%-%d%d).(%d%d:%d%d:%d%d%.%d%d%d)')
+   --      local day = string.match(msg['@t'], '(%d%d%-%d%d)')
+   local textMessage = msg['@mt']
+   
+   if day then
+      local lg_level = msg['@rpos_ll'] or 0
+      local lg_type = msg['@l'] or ''
+      if numThreadIds > 1 then
+         print(string.format("%s %s l%02d t%02X %5.5s %s", day, time, lg_level, (tid or 0), lg_type, textMessage))
+      else
+         print(string.format("%s %s l%02d %5.5s %s", day, time, lg_level, lg_type, textMessage))
+      end
+   end
+end
+
+while true do
+   local input = io.read()
+
+   -- Check if input is the exit command
+   if not input then
+      print("Exiting...")
+      break
+   else
+      local msg = json.decode(input)
+      if not msg then
+         print(input)
+      else
+         printFormattedJson(msg)
+      end
+   end
+
+   -- Print the input
+--   print("You entered: " .. input)
+end

@@ -1,3 +1,2 @@
-docker stop c-vxfuel
-docker rm c-vxfuel
+./i-stop.ps1
 docker image rm vxfuel:latest

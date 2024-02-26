@@ -4,14 +4,18 @@ export CXUSER=pcrfuel
 export CXUSERPATH=/home/$CXUSER
 export CX_LOG=$CXUSERPATH/log/crossover
 
+# make default access group writable, (I hope).  Previous default umask is 0022;
+# with container sharing files under persistent maps, it is nice to have group
+# access to the logs and data directory
+umask 0002
 
 WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.teleq.log 2>&1 /fp/bin/TeleQ.exe&
 sleep 2
 WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.jem.log 2>&1 /fp/bin/JagEventManager.exe&
-sleep 2
-WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.pcm.log 2>&1 /fp/bin/PriceChangeManager.exe&
-sleep 1
+sleep 5
 WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.devman.log 2>&1 /fp/bin/DevMan.exe&
 sleep 1
-WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.icarus.log 2>&1 /fp/bin/Icarus.exe&
+#WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.icarus.log 2>&1 /fp/bin/Icarus.exe&
+#sleep 1
+#WINEDEBUG=${WINEDEBUG_CONFIG} /opt/cxoffice/bin/wine >> ${CX_LOG}.pcm.log 2>&1 /fp/bin/PriceChangeManager.exe&
 

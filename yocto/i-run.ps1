@@ -2,8 +2,14 @@
 ########################################################################################
 # https://stackoverflow.com/questions/39421131/is-it-possible-to-write-one-script-that-runs-in-bash-shell-and-powershell
 ########################################################################################
-function publishports () {
+function lfn_publishports () {
     echo "-p 1883:1883 -p 8182:8182 -p 3131:3131 -p 5006:5006/udp -p 1127:1127 -p 1128:1128/udp -p 5150:5150"
+}
+function lfn_tntdevices () {
+    echo ""
+    # echo "--privileged"
+    # echo "--device=/dev/tnt0 --device=/dev/tnt1 --device=/dev/tnt2 --device=/dev/tnt3"
+    # echo "--device=/dev/ttyS0"
 }
 echo --% >/dev/null;: ' | out-null
 <#'
@@ -33,16 +39,19 @@ if $USE_HOST_X_SERVER; then
     echo running with X sockets and host network
     docker run -h panther2 --name c-vxfuel --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
 else
-    echo running with embedded X tightvnc service
 
 # "publishports": function at the top of this file that exposes specific ports
     #    docker run -h panther2 --name jag3 --volume="/home/matt/persist:/persist" `publishports` -d -i -t $IMAGE  /bin/bash
-    rm -f ~/persist/log/*.zip
-    rm -f ~/persist/log/eventfile*
-    rm -f ~/persist/log/*.log
-    rm -f ~/persist/log/*log*.json
+    echo Removing old logs
+    sudo rm -f ~/persist/log/*.zip
+    sudo rm -f ~/persist/log/eventfile*
+    sudo rm -f ~/persist/log/*.log
+    sudo rm -f ~/persist/log/*log*.json
     
-    docker run --init -h panther2 --name c-vxfuel --volume="/home/matt/persist:/persist" `publishports` -d -i -t $IMAGE  /bin/bash
+    echo running with embedded X tightvnc service
+    docker run --init -h panther2 \
+           --name c-vxfuel --volume="/home/matt/persist:/persist" `lfn_publishports` `lfn_tntdevices` -d -i \
+           -t $IMAGE  /bin/bash
 fi
 
 docker exec -it c-vxfuel /opt/config/docker-configure-run.sh
@@ -59,7 +68,7 @@ $IMAGE="vxfuel:latest"
 if ($false) {
     docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
 } else {
-    docker run -h panther2 --name jag3 --volume="/persist:/persist" $(publishports) -d -i -t $IMAGE  /bin/bash
+    docker run -h panther2 --name jag3 --volume="/persist:/persist" $(lfn_publishports) -d -i -t $IMAGE  /bin/bash
 }
 
  docker exec -it jag3 /opt/config/docker-configure-run.sh

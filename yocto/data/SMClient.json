@@ -1,0 +1,60 @@
+{
+  "FileHeader": {
+    "Description": "EmeraldCAB;2099.0.2.693;2022-03-03T19:56:08+01:00",
+    "Version": 6
+  },
+  "RelayRecs": [
+    {
+      "ProcessNode": 100,
+      "HostNode": 100,
+      "InitDelay": 5000,
+      "Flags": 0,
+      "ProgName": "Jag_Event_Manager",
+      "AppName": "JagEventManager.exe"
+    },
+    {
+      "ProcessNode": 100,
+      "HostNode": 100,
+      "InitDelay": 5000,
+      "Flags": 129,
+      "ProgName": "RadRam TeleQ Process",
+      "AppName": "TeleQ.exe"
+    },
+    {
+      "ProcessNode": 100,
+      "HostNode": 100,
+      "InitDelay": 15000,
+      "Flags": 128,
+      "ProgName": "Device Manager",
+      "AppName": "DevMan.exe",
+      "CmdLine": "",
+      "Environment": ""
+    },
+    {
+      "ProcessNode": 100,
+      "HostNode": 100,
+      "InitDelay": 5000,
+      "Flags": 0,
+      "ProgName": "PriceChangeManager",
+      "AppName": "PriceChangeManager.exe",
+      "CmdLine": "",
+      "Environment": ""
+    },
+    {
+      "ProcessNode": 100,
+      "HostNode": 100,
+      "InitDelay": 5000,
+      "Flags": 0,
+      "ProgName": "Icarus",
+      "AppName": "Icarus.exe",
+      "CmdLine": "",
+      "Environment": ""
+    }
+  ],
+  "RelayNodeTypeRecs": [
+    {
+      "NodeNumber": 100,
+      "NodeType": 133
+    }
+  ]
+}

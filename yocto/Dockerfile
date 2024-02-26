@@ -1,10 +1,15 @@
-FROM scratch
+gFROM scratch
 
 ARG VXFUEL_BUNDLE
 ARG VXFUEL_CAB
 ARG VXFUEL_MQTT
 
 ADD yocto-root.tgz /
+
+COPY data/profile /etc/profile
+
+run mkdir -p /opt/pcr/data && chown -R 701:701 /opt
+COPY data/vnc-passwd /opt/pcr/data
 
 ########################################################################################
 # exposed ports
@@ -95,6 +100,9 @@ run mkdir /opt/pcr/container && chown 701:701 /opt/pcr/container
 COPY script/sitetrust.sh /opt/pcr/container
 run chmod a+x /opt/pcr/container/sitetrust.sh
 
+
+
+
 ########################################################################################
 # without a minimal 'init' process, the container accumulates zombie processes.
 # So we steal a debian build of tini here to serve as our container init.
@@ -162,6 +170,7 @@ RUN chmod a+x /usr/bin/vxfuel-container-start
 COPY vxfuel-run-win32-fuel-parts /usr/bin
 RUN chmod a+x /usr/bin/vxfuel-run-win32-fuel-parts
 
+COPY script/psnot /usr/local/bin
 COPY bin/cabextract /usr/local/bin
 COPY bin/libmspack.so.0 /usr/lib64
 
@@ -172,6 +181,9 @@ COPY bin/BDDServices.exe /opt/pcr/bin
 COPY ${VXFUEL_MQTT} /opt/
 COPY ${VXFUEL_CAB} /opt/
 RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab; unzip /opt/JAG_MQTT_*.zip && rm /opt/JAG_MQTT_*.zip)
+
+# Patched RadStart (no radio lock / reboot)
+COPY bin/RadStart.exe /opt/efs-extract/bin/NT-x86/
 
 
 

@@ -1,0 +1,155 @@
+FROM yocto-base:latest
+
+ARG VXFUEL_CAB
+ARG VXFUEL_MQTT
+
+########################################################################################
+# exposed ports
+########################################################################################
+# Not sure about the necessity of these; connections seem to work from our host without
+# these even being present in expose statements, so... ??
+
+# vncviewer
+EXPOSE 5901
+
+# Mosquitto
+EXPOSE 1883
+
+
+# radio commands
+EXPOSE 3131
+# radio heartbeats
+EXPOSE 5006/udp
+# devman fault tolerance??
+EXPOSE 4237/udp
+# teleq
+EXPOSE 1127
+# teleq heartbeats
+expose 1128/udp
+# ssh/dropbear
+expose 22
+# SiteTrust
+expose 452
+expose 451
+
+# gilbarco
+expose 4780
+# gilbarco
+expose 4870
+# gilbarco
+expose 4871
+# Gilbarco
+expose 5200/udp
+# optic / WayneIX DC Server
+expose 5150
+
+# ICR connect
+expose 5160
+# ICR Connect
+expose 5161
+
+# IFSF FDC
+expose 5959
+# IFSF FDC
+expose 5960
+
+# Additech
+expose 8413
+
+# Icarus test interface
+expose 8181
+# BDD Services
+expose 8182
+# Devman test interface
+expose 8183
+# SMClient heartbeats
+expose 5200/udp
+
+
+# Emerald / TcpCom?
+expose 1400
+# Kroger POS
+expose 4004
+# Shell Mobile
+expose 4006
+# Logger?
+expose 5100
+########################################################################################
+
+COPY data/profile /etc/profile
+run mkdir -p /opt/pcr/data && chown -R 701:701 /opt
+COPY data/vnc-passwd /opt/pcr/data
+
+
+COPY script/sitetrust.sh /opt/pcr/container
+run chmod a+x /opt/pcr/container/sitetrust.sh
+
+
+
+###################################################################################################
+# Temporary hack to copy in new config project changes; remove this for production which
+# will get the 'latest' copy from the bundle
+#######################################################
+COPY config.tgz /opt/pcr/install
+WORKDIR /opt/pcr/install
+RUN tar -zxf config.tgz
+###################################################################################################
+
+
+
+WORKDIR /opt/pcr/install/panther2-jagless-linux-config
+RUN /opt/pcr/install/panther2-jagless-linux-config/configure-linux.sh
+
+COPY vxfuel-container-start /usr/bin
+RUN chmod a+x /usr/bin/vxfuel-container-start
+
+COPY vxfuel-run-win32-fuel-parts /usr/bin
+RUN chmod a+x /usr/bin/vxfuel-run-win32-fuel-parts
+
+COPY script/psnot /usr/local/bin
+COPY bin/cabextract /usr/local/bin
+COPY bin/libmspack.so.0 /usr/lib64
+COPY script/hrlog /usr/local/bin
+
+RUN mkdir -p /opt/pcr/bin
+COPY bin/BDDServices.exe /opt/pcr/bin
+
+
+COPY ${VXFUEL_MQTT} /opt/
+COPY ${VXFUEL_CAB} /opt/
+RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForecourtServices_*.cab && rm -f /opt/EmeraldForecourtServices_*.cab; unzip /opt/JAG_MQTT_*.zip && rm /opt/JAG_MQTT_*.zip)
+
+# Patched RadStart (no radio lock / reboot)
+COPY bin/RadStart.exe /opt/efs-extract/bin/NT-x86/
+
+
+
+# this is some ad-hoc crap here.  Somehow radstart expects these directories,
+# maybe because we should have run Radio install before we run
+# radstart?  I don't know.
+RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Bin
+# RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Data
+# RUN mkdir -p /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
+RUN ln -s /persist/log /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Log
+RUN ln -s /persist/data /home/pcrfuel/.wine/drive_c/Program\ Files/Radiant/FastPoint/Data
+RUN chown -R pcrfuel:pcrfuel /home/pcrfuel/.wine
+
+
+user pcrfuel
+WORKDIR /home/pcrfuel
+
+COPY data/.bashrc /home/pcrfuel/.bashrc
+
+RUN ln -s /opt/pcr/install/panther2-jagless-linux-config /opt/config
+
+RUN ln -s /opt/.Xauthority /home/pcrfuel/.Xauthority
+
+
+
+
+#ENTRYPOINT ["/sbin/init"]
+
+# CMD ["/bin/bash", ":0"]
+# CMD ["/usr/bin/tightvncserver", ":0"]
+
+ENTRYPOINT ["/usr/bin/tail", "-f", "/dev/null"]
