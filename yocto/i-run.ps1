@@ -46,6 +46,8 @@ else
     sudo rm -f ~/persist/log/*.zip
     sudo rm -f ~/persist/log/eventfile*
     sudo rm -f ~/persist/log/*.log
+    sudo rm -f ~/persist/log/crossover/*.log
+    sudo rm -f ~/persist/log/crossover/*.bak
     sudo rm -f ~/persist/log/*log*.json
     
     echo running with embedded X tightvnc service

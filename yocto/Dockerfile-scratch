@@ -184,6 +184,9 @@ RUN mkdir /opt/efs-extract && (cd /opt/efs-extract; cabextract /opt/EmeraldForec
 
 # Patched RadStart (no radio lock / reboot)
 COPY bin/RadStart.exe /opt/efs-extract/bin/NT-x86/
+COPY jag.tgz /opt/efs-extract/bin/NT-x86
+RUN (cd /opt/efs-extract/bin/NT-x86; tar -zxvf jag.tgz)
+# COPY bin/jag-patch/MqttInterface.dll /opt/efs-extract/bin/NT-x86/
 
 
 
