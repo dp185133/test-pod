@@ -1,4 +1,4 @@
-FROM yocto-base:latest
+FROM localhost:5001/yocto-base:latest
 
 ARG VXFUEL_CAB
 ARG VXFUEL_MQTT

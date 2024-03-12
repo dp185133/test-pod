@@ -14,5 +14,5 @@ rm config.tgz; tar -C ~/git/panther/panther-linux-install-bundler/build/panther2
 
 #>
 
-echo docker build -t vxfuel --build-arg "VXFUEL_CAB=$VXFUEL_CAB" --build-arg "VXFUEL_MQTT=$VXFUEL_MQTT" -f Docker-yoctoplus .
-docker build -t vxfuel --build-arg "VXFUEL_CAB=$VXFUEL_CAB" --build-arg "VXFUEL_MQTT=$VXFUEL_MQTT" -f Docker-yoctoplus .
+echo docker build -t localhost:5001/vxfuel --build-arg "VXFUEL_CAB=$VXFUEL_CAB" --build-arg "VXFUEL_MQTT=$VXFUEL_MQTT" -f Docker-yoctoplus .
+docker build -t localhost:5001/vxfuel --build-arg "VXFUEL_CAB=$VXFUEL_CAB" --build-arg "VXFUEL_MQTT=$VXFUEL_MQTT" -f Docker-yoctoplus .

@@ -1,2 +1,2 @@
 ./i-stop.ps1
-docker image rm vxfuel:latest
+docker image rm localhost:5001/vxfuel:latest
