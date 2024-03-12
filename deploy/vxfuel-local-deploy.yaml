@@ -17,6 +17,7 @@ spec:
       hostname: panther2
       containers:
       - name: vxfuel
-        image: localhost:5001/jacto:latest
-#        ports:
-#        - containerPort: 80
+      volumeMounts:
+      - name: vxfuel-persist
+        mountPath: /persist/
+        image: localhost:5001/vxfuel:latest

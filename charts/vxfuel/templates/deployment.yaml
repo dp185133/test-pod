@@ -15,15 +15,15 @@ spec:
         app: vxfuel
     spec:
       hostname: panther2
+      volumes:
+      - name: vxfuel-persist
+        size: "1Gi"
       containers:
       - name: vxfuel
         image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:latest
         volumeMounts:
-        - containerPath: /persist
-          volume:
-            name: vxfuel-persist
-            subPath: /vxfuel
-            readOnly: false
+        - name: vxfuel-persist
+          mountPath: /persist/
       imagePullSecrets:
       - name: edge-docker-pull-secret
 
