@@ -18,10 +18,15 @@ spec:
       containers:
       - name: vxfuel
         image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:latest
+        volumeMounts:
+        - containerPath: /persist
+          volume:
+            name: vxfuel-persist
+            subPath: /vxfuel
+            readOnly: false
       imagePullSecrets:
       - name: edge-docker-pull-secret
 
 
 #        ports:
-#        - containerPort: 80
-         
+#        - containerPort: 80         

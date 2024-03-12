@@ -1,6 +1,9 @@
 apiVersion: v2
-appVersion: 0.1.0
+appVersion: 0.1.1
 description: vxFuel Helm chart for Kubernetes
 name: vxfuel
 type: application
-version: 0.1.0
+version: 0.1.1
+volumes:
+- name: vxfuel-persist
+  size: "1Gi"
