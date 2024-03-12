@@ -15,18 +15,8 @@ spec:
         app: vxfuel
     spec:
       hostname: panther2
-      volumes:
-      - name: vxfuel-persist
       containers:
       - name: vxfuel
         image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:latest
-        volumeMounts:
-        - name: vxfuel-persist
-          mountPath: /persist/
       imagePullSecrets:
       - name: edge-docker-pull-secret
-      ports:
-         - containerPort: 1883
-
-#        ports:
-#        - containerPort: 80         

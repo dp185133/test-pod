@@ -3,7 +3,17 @@ entries:
   vxfuel:
   - apiVersion: v2
     appVersion: 0.1.1
-    created: "2024-03-12T18:36:19.093898342-04:00"
+    created: "2024-03-12T19:44:31.92299313-04:00"
+    description: vxFuel Helm chart for Kubernetes
+    digest: dde22d1e491a287634bb398824e86e9613d120b640fea5da4900f8e795866aea
+    name: vxfuel
+    type: application
+    urls:
+    - docs/vxfuel-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2024-03-12T19:44:31.922873317-04:00"
     description: vxFuel Helm chart for Kubernetes
     digest: 1dac8226dc149701e253d4f0d0fcb5f84d3bbca0ad6b7566aaad3d774c70070d
     name: vxfuel
@@ -11,4 +21,4 @@ entries:
     urls:
     - docs/vxfuel-0.1.1.tgz
     version: 0.1.1
-generated: "2024-03-12T18:36:19.093654659-04:00"
+generated: "2024-03-12T19:44:31.922608273-04:00"
