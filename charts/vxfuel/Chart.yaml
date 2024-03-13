@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: 0.1.1
 description: vxFuel Helm chart for Kubernetes
 name: vxfuel
 type: application
-version: 0.1.1
+version: 0.1.6
+appVersion: 0.1.6
