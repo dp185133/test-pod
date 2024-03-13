@@ -19,13 +19,17 @@ spec:
       - name: vxfuel-persist
       containers:
       - name: vxfuel
-        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.7
+        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.9
         volumeMounts:
         - name: vxfuel-persist
           mountPath: /persist/
         env:
         - name: USER
           value: pcrfuel
+        - name: PATH
+          value: /usr/local/bin:/usr/bin:/bin:/opt/cxoffice/bin:/sbin:/usr/sbin
+        ports:
+        - containerPort: 1883
       imagePullPolicy: Always
       imagePullSecrets:
       - name: edge-docker-pull-secret

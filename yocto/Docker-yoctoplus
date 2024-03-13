@@ -95,7 +95,11 @@ WORKDIR /opt/pcr/install
 RUN tar -zxf config.tgz
 ###################################################################################################
 
-
+########################################################################################
+# Temporary hack to get RPOS configuration files into the 'data' directory
+# (docker cp is not working in edge cluster)
+########################################################################################
+COPY data.tgz /opt/data.tgz
 
 WORKDIR /opt/pcr/install/panther2-jagless-linux-config
 RUN /opt/pcr/install/panther2-jagless-linux-config/configure-linux.sh
