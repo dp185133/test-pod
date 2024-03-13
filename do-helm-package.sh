@@ -4,3 +4,5 @@ if [ "$1" == "" ]; then
 fi
 helm package -d charts/docs --version $1 charts/vxfuel
 helm repo index charts
+git add charts/docs/vxfuel-${1}.tgz
+
