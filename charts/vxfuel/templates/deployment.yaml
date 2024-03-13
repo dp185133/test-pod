@@ -19,7 +19,7 @@ spec:
       - name: vxfuel-persist
       containers:
       - name: vxfuel
-        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.10
+        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.11
         volumeMounts:
         - name: vxfuel-persist
           mountPath: /persist/

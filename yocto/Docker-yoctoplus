@@ -154,10 +154,14 @@ RUN ln -s /opt/.Xauthority /home/pcrfuel/.Xauthority
 
 
 
-
 #ENTRYPOINT ["/sbin/init"]
-
 # CMD ["/bin/bash", ":0"]
 # CMD ["/usr/bin/tightvncserver", ":0"]
 
-ENTRYPOINT ["/usr/bin/tail", "-f", "/dev/null"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+CMD ["/usr/bin/tail", "-f", "/dev/null"]
+
+
+
+
