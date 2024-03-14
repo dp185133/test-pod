@@ -21,7 +21,7 @@ spec:
           claimName: vxfuel-persist-claim
       containers:
       - name: vxfuel
-        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.12
+        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.13
         volumeMounts:
         - name: vxfuel-persist
           mountPath: /persist/
