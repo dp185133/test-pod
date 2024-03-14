@@ -17,9 +17,11 @@ spec:
       hostname: panther2
       volumes:
       - name: vxfuel-persist
+        persistentVolumeClaim:
+          claimName: vxfuel-persist-claim
       containers:
       - name: vxfuel
-        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.11
+        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.12
         volumeMounts:
         - name: vxfuel-persist
           mountPath: /persist/
@@ -30,6 +32,7 @@ spec:
           value: /usr/local/bin:/usr/bin:/bin:/opt/cxoffice/bin:/sbin:/usr/sbin
         ports:
         - containerPort: 1883
+        - containerPort: 5901
       imagePullPolicy: Always
       imagePullSecrets:
       - name: edge-docker-pull-secret
