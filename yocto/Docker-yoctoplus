@@ -163,7 +163,7 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 #CMD ["/usr/bin/tail", "-f", "/dev/null"]
 
 
-CMD ["/opt/config/docker-configure-run.sh"]
+CMD ["/usr/bin/screen", "-e^w^w", "-h", "9999", "/opt/config/docker-configure-run.sh"]
 
 
 
