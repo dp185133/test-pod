@@ -160,7 +160,11 @@ RUN ln -s /opt/.Xauthority /home/pcrfuel/.Xauthority
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["/usr/bin/tail", "-f", "/dev/null"]
+#CMD ["/usr/bin/tail", "-f", "/dev/null"]
+
+
+CMD ["/opt/config/docker-configure-run.sh"]
+
 
 
 
