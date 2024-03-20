@@ -22,7 +22,6 @@ spec:
       containers:
       - name: vxfuel
         image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.19
-        command: ["/usr/bin/screen"]
         args: ["/opt/config/docker-configure-run.sh"]
         volumeMounts:
         - name: vxfuel-persist
@@ -38,3 +37,4 @@ spec:
       imagePullPolicy: Always
       imagePullSecrets:
       - name: edge-docker-pull-secret
+
