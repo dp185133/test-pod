@@ -1,3 +1,5 @@
+# --*-dockerfile-*--
+
 FROM localhost:5001/yocto-base:latest
 
 ARG VXFUEL_CAB
@@ -16,7 +18,7 @@ EXPOSE 5901
 EXPOSE 1883
 
 
-# radio commands
+# radio# commands
 EXPOSE 3131
 # radio heartbeats
 EXPOSE 5006/udp
@@ -158,14 +160,16 @@ RUN ln -s /opt/.Xauthority /home/pcrfuel/.Xauthority
 # CMD ["/bin/bash", ":0"]
 # CMD ["/usr/bin/tightvncserver", ":0"]
 
+#ENTRYPOINT ["/usr/bin/tini", "--", "/usr/bin/tail", "-F", "/dev/null"]
 ENTRYPOINT ["/usr/bin/tini", "--"]
+#CMD ["/usr/bin/tail", "-F", "/dev/null"]
+# CMD ["/usr/bin/screen", "-e^w^w", "-h", "9999", "/usr/bin/tail", "-F", "/dev/null"]
+CMD ["/usr/bin/screen", "-e^w^w", "-h", "9999", "/opt/config/docker-configure-run.sh"]
 
-CMD ["/usr/bin/tail", "-f", "/dev/null"]
+# , "--", "/opt/config/docker-configure-run.sh"]
+
 
 
 #CMD ["/usr/bin/screen", "-e^w^w", "-h", "9999", "/opt/config/docker-configure-run.sh"]
-
-
-
-
+#CMD ["/usr/bin/screen", "/opt/config/docker-configure-run.sh"]
 

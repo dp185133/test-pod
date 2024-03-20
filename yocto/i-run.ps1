@@ -53,11 +53,12 @@ else
     echo running with embedded X tightvnc service
     docker run --init -h panther2 \
            --name c-vxfuel --volume="/home/matt/persist:/persist" `lfn_publishports` `lfn_tntdevices` -d -i \
-           -t $IMAGE  /bin/bash
+           -t $IMAGE
+    # /bin/bash
 fi
 
-docker exec -it c-vxfuel /opt/config/docker-configure-run.sh
-# docker exec -it c-vxfuel /bin/bash --login
+# docker exec -it c-vxfuel /opt/config/docker-configure-run.sh
+docker exec -it c-vxfuel /bin/bash --login
 
 exit 0
 ########################################################################################
@@ -70,10 +71,11 @@ $IMAGE="vxfuel:latest"
 if ($false) {
     docker run -h panther2 --name jag3 --net=host --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix" --volume="/home/matt/.Xauthority:/opt/.Xauthority" --volume="/home/matt/persist:/persist" -d -i -t $IMAGE  /bin/bash
 } else {
-    docker run -h panther2 --name jag3 --volume="/persist:/persist" $(lfn_publishports) -d -i -t $IMAGE  /bin/bash
+       docker run -h panther2 --name jag3 --volume="/persist:/persist" $(lfn_publishports) -d -i -t $IMAGE
+       #/bin/bash
 }
 
- docker exec -it jag3 /opt/config/docker-configure-run.sh
+docker exec -it jag3 /opt/config/docker-configure-run.sh
 
 # docker exec -it jag3 /bin/bash
 
