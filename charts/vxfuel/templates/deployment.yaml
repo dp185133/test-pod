@@ -22,8 +22,10 @@ spec:
       containers:
       - name: vxfuel
         image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.19
-        command: ["/usr/bin/screen"]
-        args: ["-d", "-m", "/opt/config/docker-configure-run.sh"]
+        command: ["/opt/config/docker-configure-run.sh"]
+#        command: ["/usr/bin/screen"]
+#        args: ["-d", "-m", "/opt/config/docker-configure-run.sh"]
+#        args: ["tail", "-F", "/dev/null"]
         volumeMounts:
         - name: vxfuel-persist
           mountPath: /persist/
