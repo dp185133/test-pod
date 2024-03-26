@@ -1,3 +1,3 @@
-docker build -t jag-ub .
+docker build -t vxtest .
 
 
