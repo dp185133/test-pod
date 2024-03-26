@@ -1,33 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vxfuel-deployment
+  name: vxtest-deployment
   labels:
-    app: vxfuel
+    app: vxtest
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vxfuel
+      app: vxtest
   template:
     metadata:
       labels:
-        app: vxfuel
+        app: vxtest
     spec:
-      hostname: panther2
+      hostname: testhost
       volumes:
       - name: vxfuel-persist
         persistentVolumeClaim:
           claimName: vxfuel-persist-claim
       containers:
-      - name: vxfuel
-        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxfuel:0.1.19
-#        command: ["/opt/config/docker-configure-run.sh"]
+      - name: vxtest
+        image: us-east1-docker.pkg.dev/ret-edge-pltf-infra/workloads/vxtest:0.1.1
         command: ["/usr/bin/tini"]
         args: ["--", "/usr/bin/tail", "-F", "/dev/null"]
-#        command: ["/usr/bin/screen"]
-#        args: ["-d", "-m", "/opt/config/docker-configure-run.sh"]
-#        args: ["tail", "-F", "/dev/null"]
         volumeMounts:
         - name: vxfuel-persist
           mountPath: /persist/
@@ -36,9 +32,6 @@ spec:
           value: pcrfuel
         - name: PATH
           value: /usr/local/bin:/usr/bin:/bin:/opt/cxoffice/bin:/sbin:/usr/sbin
-        ports:
-        - containerPort: 1883
-        - containerPort: 5901
       imagePullPolicy: Always
       imagePullSecrets:
       - name: edge-docker-pull-secret
